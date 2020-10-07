@@ -31,7 +31,7 @@ let item = [
     contactinfo: {
       sellerName: 'sellername',
       sellerEmail: 'email',
-      sellerPhonenumber: 0450450450
+      sellerPhonenumber: '0450450450'
     },
     dateOfPosting: Date.now()
   }
@@ -42,7 +42,7 @@ let user = [
     uid: uuidv4(),
     username: 'username',
     email: 'email',
-    phoneNumber: 0450450450,
+    phoneNumber: '05463442',
     password: 'password123',
     name: 'name',
     address: {
@@ -52,6 +52,16 @@ let user = [
     }
   },
 ];
+
+//Get users
+app.get('/user', (req, res) => {
+  res.json({ user });
+})
+
+//Get items
+app.get('/item', (req, res) => {
+  res.json({ item });
+})
 
 //create a new user
 app.post('/user', (req, res) => {
@@ -65,15 +75,15 @@ app.post('/user', (req, res) => {
     address: req.body.address
   };
 
-  if(newUser.username.lenght > 0 && typeof newUser.username === 'string',
-    newUser.email.lenght > 0 && typeof newUser.email === 'string',
-    newUser.phoneNumber.lenght > 0 && typeof newUser.phoneNumber === 'number',
-    newUser.password.lenght > 4 && typeof newUser.password === 'string',
-    newUser.name.lenght > 0 && typeof newUser.name === 'string',
-    newUser.address.street.lenght > 0 && typeof newUser.address.street === 'string',
-    newUser.address.postalCode.lenght > 0 && typeof newUser.address.postalCode === 'number',
-    newUser.address.city.length > 0 && typeof newUser.address.city === 'string'
-  ) {
+  if(newUser.username.length > 0 && typeof newUser.username === 'string',
+    newUser.email.length > 0 && typeof newUser.email === 'string',
+    newUser.phoneNumber.length > 0 && typeof newUser.phoneNumber === 'string',
+    newUser.password.length > 4 && typeof newUser.password === 'string',
+    newUser.name.length > 0 && typeof newUser.name === 'string',
+    newUser.address.street.length > 0 && typeof newUser.address.street === 'string',
+    newUser.address.postalCode.toString().length > 0 && typeof newUser.address.postalCode === 'number',
+    newUser.address.city.length > 0 && typeof newUser.address.city === 'string') 
+    {
     newUser.password = passwordHash.generate(newUser.password);
     user.push(newUser);
     res.sendStatus(200);
@@ -94,13 +104,13 @@ app.post('/item', (req, res) => {
     dateOfPosting: Date.now()
   };
 
-  if(newItem.title.lenght > 0 && typeof newItem.title === 'string',
-    newItem.description.lenght > 0 && typeof newItem.description === 'string',
-    newItem.location.city.lenght > 0 && typeof newItem.location.city === 'string',
-    newItem.location.postalCode.lenght > 0 && typeof newItem.location.postalCode === 'number',
-    newItem.contactinfo.sellerName.lenght > 0 && typeof newItem.contactinfo.sellerName === 'string',
-    newItem.contactinfo.sellerEmail.lenght > 0 && typeof newItem.contactinfo.sellerEmail === 'string',
-    newItem.contactinfo.sellerPhonenumber.length > 0 && typeof newItem.contactinfo.sellerPhonenumber === 'number') 
+  if(newItem.title.length > 0 && typeof newItem.title === 'string',
+    newItem.description.length > 0 && typeof newItem.description === 'string',
+    newItem.location.city.length > 0 && typeof newItem.location.city === 'string',
+    newItem.location.postalCode.toString().length > 0 && typeof newItem.location.postalCode === 'number',
+    newItem.contactinfo.sellerName.length > 0 && typeof newItem.contactinfo.sellerName === 'string',
+    newItem.contactinfo.sellerEmail.length > 0 && typeof newItem.contactinfo.sellerEmail === 'string',
+    newItem.contactinfo.sellerPhonenumber.length > 0 && typeof newItem.contactinfo.sellerPhonenumber === 'string') 
     {
     if(Object.values(newItem.category).some(e => e === true)) 
     {
@@ -112,6 +122,44 @@ app.post('/item', (req, res) => {
     }
   } else {
     res.sendStatus(400);
+  }
+})
+
+app.put('/user/:uid', (req, res) => {
+  const result = user.find(t => t.uid == req.params.uid);
+  if(result !== undefined)
+  {
+    for(const key in req.body){
+      result[key] = req.body[key];
+    }
+    res.sendStatus(200);
+  }else {
+    res.sendStatus(404);
+  }
+})
+
+app.put('/item/:itemId', (req, res) => {
+  const result = item.find(t => t.itemId == req.params.itemId);
+  if(result !== undefined)
+  {
+    for(const key in req.body){
+      result[key] = req.body[key];
+    }
+    res.sendStatus(200);
+  }else {
+    res.sendStatus(404);
+  }
+})
+
+app.delete('/item/:itemId', (req, res) => {
+  const result = item.findIndex(t => t.itemId == req.params.itemId);
+  if(result !== -1)
+  {
+      item.splice(result, 1);
+      res.sendStatus(200);
+  }
+  else {
+      res.sendStatus(404);
   }
 })
 
