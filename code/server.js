@@ -111,21 +111,26 @@ app.get('/item/date', (req, res) => {
 })
 
 //login
-app.post('/login', async (req, res) => {
+app.post('/login', (req, res) => {
   for(let i in user) {
     if(user[i].username === req.body.username) {
       islogged = user[i];
       break;
+    } else {
+      res.send('Wrong username')
+      break;
     }
   }
-  bcrypt.compare(req.body.password, islogged.password, function (err, result) {
-    if(result) {
-      res.sendStatus(200);
-    } else {
-      islogged = null;
-      res.send('Failed to login');
-    }
-  })
+  if(islogged) {
+    bcrypt.compare(req.body.password, islogged.password, function (err, result) {
+      if(result) {
+        res.sendStatus(200);
+      } else {
+        islogged = null;
+        res.send('Wrong password');
+      }
+    })
+  }
 })
 
 //postman to check is logged
