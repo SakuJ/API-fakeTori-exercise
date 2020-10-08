@@ -12,7 +12,7 @@ let item = [
   {
     uid: uuidv4(),
     itemId: uuidv4(),
-    title: 'title',
+    title: 'My new sexdoll',
     description: 'description',
     category: {
       cars: false,
@@ -61,11 +61,54 @@ app.get('/user', (req, res) => {
   res.json({ user });
 })
 
-//Get items
 app.get('/item', (req, res) => {
-  res.json({ item });
+  res.json({item});
 })
 
+//Get items
+app.get('/item/category', (req, res) => {
+  let result = [];
+  for(const key in req.query) {
+    if(key === "other" && req.query[key] === "true") {
+      result = item.filter(t => t.category.other === true);
+    } else if(key === "cars" && req.query[key] === "true") {
+      result = item.filter(t => t.category.cars === true);
+    } else if(key === "home" && req.query[key] === "true") {
+      result = item.filter(t => t.category.home === true);
+    } else if(key === "clothings" && req.query[key] === "true") {
+      result = item.filter(t => t.category.clothings === true);
+    } else if(key === "electronic" && req.query[key] === "true") {
+      result = item.filter(t => t.category.electronic === true)
+    } else {
+      result = item;
+    }
+    res.json({result});
+  }
+})
+
+app.get('/item/location', (req, res) => {
+  for(const key in req.query) {
+    if(key === "city") {
+      result = item.filter(t => t.location.city === req.query[key]);
+    } else {
+      result = item;
+    }
+    res.json({result});
+  }
+})
+
+app.get('/item/date', (req, res) => {
+  if(req.query.date && req.query.date2) {
+    let date1 = new Date(req.query.date);
+    let millis1 = date1.getTime();
+    let date2 = new Date(req.query.date2);
+    let millis2 = date2.getTime();
+    result = item.filter(t => (t.dateOfPosting >= millis1) && (t.dateOfPosting <= millis2));
+  } else {
+    result = item;
+  }
+  res.json({result});
+})
 
 //login
 app.post('/login', async (req, res) => {
