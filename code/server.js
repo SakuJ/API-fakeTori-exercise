@@ -54,7 +54,7 @@ let user = [
   },
 ];
 
-let islogged;
+let islogged = null;
 
 //Get users
 app.get('/user', (req, res) => {
@@ -79,6 +79,7 @@ app.post('/login', async (req, res) => {
     if(result) {
       res.sendStatus(200);
     } else {
+      islogged = null;
       res.send('Failed to login');
     }
   })
