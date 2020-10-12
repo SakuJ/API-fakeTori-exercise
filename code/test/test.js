@@ -16,6 +16,9 @@ describe('Fake tori.fi operations', function() {
     server.stop();
   })
 
+  let islogged;
+  let item = [];
+
   describe('create a new user', () => {
     it('should create a new user', async () => {
       await
@@ -48,6 +51,106 @@ describe('Fake tori.fi operations', function() {
             postalCode: 90100,
             city: "Oulu"
           });
+        })
+    })
+
+    it('should not create a new user if empty strings', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/user')
+        .send({
+          username: '',
+          email: 'email@test.com',
+          phoneNumber: '0450450450',
+          password: 'password123',
+          name: 'Janne',
+          address: {
+            street: 'Isokatu',
+            postalCode: 90100,
+            city: 'Oulu'
+          }
+        })
+        .then(response => {
+          expect(response.status).to.equal(400);
+        })
+        .catch(err => {
+          expect.fail(err);
+        })
+    })
+
+    it('should not create a new user if password is under 4 characters long', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/user')
+        .send({
+          username: 'Janne123',
+          email: 'email@test.com',
+          phoneNumber: '0450450450',
+          password: 'pa1',
+          name: 'Janne',
+          address: {
+            street: 'Isokatu',
+            postalCode: 90100,
+            city: 'Oulu'
+          }
+        })
+        .then(response => {
+          expect(response.status).to.equal(400);
+        })
+        .catch(err => {
+          expect.fail(err);
+        })
+    })
+
+    it('should not create a new user if one or more field is string (except postalCode = number)', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/user')
+        .send({
+          username: 'Janne123',
+          email: 654654,
+          phoneNumber: false,
+          password: 'password123',
+          name: 16874861,
+          address: {
+            street: 'Isokatu',
+            postalCode: 90100,
+            city: 'Oulu'
+          }
+        })
+        .then(response => {
+          expect(response.status).to.equal(400);
+        })
+        .catch(err => {
+          expect.fail(err);
+        })
+    })
+
+    it('should not create a new user if one or more field is null', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/user')
+        .send({
+          username: 'Janne123',
+          email: '654654',
+          phoneNumber: null,
+          password: 'password123',
+          name: 'Janne',
+          address: {
+            street: 'Isokatu',
+            postalCode: 90100,
+            city: 'Oulu'
+          }
+        })
+        .then(response => {
+          expect(response.status).to.equal(500);
+        })
+        .catch(err => {
+          expect.fail(err);
         })
     })
   })
@@ -105,11 +208,245 @@ describe('Fake tori.fi operations', function() {
           return chai.request(apiAddress).get('/logged');
         })
         .then(readResponse => {
+          islogged = readResponse.body.islogged;
           expect(readResponse.body.islogged.username).to.equal('username')
           expect(readResponse.body.islogged.password).to.equal('$2b$10$DjN/cAf2kTQPb3im4YlMQOVvw9g5vgOSwsv1zVq0CxARZ9xuNHDti')
         })
         .catch(err => {
           expect.fail(err);
+        })
+    })
+  })
+
+  describe('Create a new item', async () => {
+    it('should create a new item', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/item')
+        .send({
+          uid: islogged.uid,
+          title: 'My old car',
+          description: 'Very much used',
+          category: {
+            cars: true,
+            home: false,
+            clothings: false,
+            electronic: false,
+            other: false
+          },
+          location: {
+            city: 'Oulu',
+            postalCode: 90100
+          },
+          deliverytype: {
+            shipping: false,
+            pickup: true
+          },
+          contactinfo: {
+            sellerName: 'Janne',
+            sellerEmail: 'Janne@email.com',
+            sellerPhonenumber: '0450450450'
+          }
+        })
+        .then(response => {
+          expect(response.status).to.equal(200);
+          return chai.request(apiAddress).get('/item')
+        })
+        .then(res => {
+          item.push(res.body.item[res.body.item.length - 1]);
+        })
+    })
+
+    it('should not create a new item if empty string', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/item')
+        .send({
+          uid: islogged.uid,
+          title: '',
+          description: 'Very much used',
+          category: {
+            cars: true,
+            home: false,
+            clothings: false,
+            electronic: false,
+            other: false
+          },
+          location: {
+            city: 'Oulu',
+            postalCode: 90100
+          },
+          deliverytype: {
+            shipping: false,
+            pickup: true
+          },
+          contactinfo: {
+            sellerName: 'Janne',
+            sellerEmail: 'Janne@email.com',
+            sellerPhonenumber: '0450450450'
+          }
+        })
+        .then(response => {
+          expect(response.status).to.equal(400);
+        })
+    })  
+
+    it('should not create a new item if empty field', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/item')
+        .send({
+          uid: islogged.uid,
+          title: null,
+          description: 'Very much used',
+          category: {
+            cars: true,
+            home: false,
+            clothings: false,
+            electronic: false,
+            other: false
+          },
+          location: {
+            city: 'Oulu',
+            postalCode: 90100
+          },
+          deliverytype: {
+            shipping: false,
+            pickup: true
+          },
+          contactinfo: {
+            sellerName: 'Janne',
+            sellerEmail: 'Janne@email.com',
+            sellerPhonenumber: '0450450450'
+          }
+        })
+        .then(response => {
+          expect(response.status).to.equal(500);
+        })
+    })    
+
+    it('should now create a new item if not logged in', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/logout')
+        .then(response => {
+          expect(response.status).to.equal(200);
+          return chai .request(apiAddress).post('/item')
+          .send({
+            uid: islogged.uid,
+            title: 'My old car',
+            description: 'Very much used',
+            category: {
+              cars: true,
+              home: false,
+              clothings: false,
+              electronic: false,
+              other: false
+            },
+            location: {
+              city: 'Oulu',
+              postalCode: 90100
+            },
+            deliverytype: {
+              shipping: false,
+              pickup: true
+            },
+            contactinfo: {
+              sellerName: 'Janne',
+              sellerEmail: 'Janne@email.com',
+              sellerPhonenumber: '0450450450'
+            }
+          })
+        })
+        .then(responseRead => {
+          expect(responseRead.status).to.equal(401);
+        })
+    })
+  })
+
+  describe('Modify a item', async () => {
+    it('should modify a item', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/login')
+        .send({
+          username: 'username',
+          password: 'password123'
+        })
+        .then(response => {
+          expect(response.status).to.equal(200);
+          return chai .request(apiAddress).put('/item/' + item[item.length -1].itemId)
+            .send({
+              title: 'New Title'
+            })
+        })
+        .then(res => {
+          expect(res.status).to.equal(200);
+        })
+    })  
+
+    it('should modify a item', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/login')
+        .send({
+          username: 'username',
+          password: 'password123'
+        })
+        .then(response => {
+          expect(response.status).to.equal(200);
+          return chai .request(apiAddress).put('/item/randomId')
+            .send({
+              title: 'New Title'
+            })
+        })
+        .then(res => {
+          expect(res.status).to.equal(404);
+        })
+    })  
+    
+    it('should not modify if not logged in', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/logout')
+        .then(response => {
+          expect(response.status).to.equal(200);
+          return chai .request(apiAddress).post('/item')
+          .send({
+            uid: islogged.uid,
+            title: 'My old car',
+            description: 'Very much used',
+            category: {
+              cars: true,
+              home: false,
+              clothings: false,
+              electronic: false,
+              other: false
+            },
+            location: {
+              city: 'Oulu',
+              postalCode: 90100
+            },
+            deliverytype: {
+              shipping: false,
+              pickup: true
+            },
+            contactinfo: {
+              sellerName: 'Janne',
+              sellerEmail: 'Janne@email.com',
+              sellerPhonenumber: '0450450450'
+            }
+          })
+        })
+        .then(responseRead => {
+          expect(responseRead.status).to.equal(401);
         })
     })
   })

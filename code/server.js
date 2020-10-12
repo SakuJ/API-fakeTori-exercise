@@ -12,14 +12,14 @@ let item = [
   {
     uid: uuidv4(),
     itemId: uuidv4(),
-    title: 'My new sexdoll',
+    title: 'My old Karl Kani hoodie',
     description: 'description',
     category: {
       cars: false,
       home: false,
-      clothings: false,
+      clothings: true,
       electronic: false,
-      other: true
+      other: false
     },
     location: {
       city: 'city',
@@ -138,78 +138,92 @@ app.get('/logged', (req, res) => {
   res.json({islogged});
 })
 
+app.post('/logout', (req, res) => {
+  islogged = null;
+  res.sendStatus(200);
+})
+
 //create a new user
 app.post('/user', (req, res) => {
-  const newUser = {
-    uid: uuidv4(),
-    username: req.body.username,
-    email: req.body.email,
-    phoneNumber: req.body.phoneNumber,
-    password: req.body.password,
-    name: req.body.name,
-    address: req.body.address
-  };    
-  
-  if(newUser.username.length > 0 && typeof newUser.username === 'string',
-  newUser.email.length > 0 && typeof newUser.email === 'string',
-  newUser.phoneNumber.length > 0 && typeof newUser.phoneNumber === 'string',
-  newUser.password.length > 4 && typeof newUser.password === 'string',
-  newUser.name.length > 0 && typeof newUser.name === 'string',
-  newUser.address.street.length > 0 && typeof newUser.address.street === 'string',
-  newUser.address.postalCode.toString().length > 0 && typeof newUser.address.postalCode === 'number',
-  newUser.address.city.length > 0 && typeof newUser.address.city === 'string') 
-  {  
-    bcrypt.hash(newUser.password, saltRounds, function (err, hash) {
-      if(hash) {
-        newUser.password = hash;
-        console.log(newUser.password)
-        user.push(newUser);
-        res.sendStatus(200);
-      } else {
-        console.log(err);
-      }
-    })
-  } else {
-    res.sendStatus(400);
+  try{
+    const newUser = {
+      uid: uuidv4(),
+      username: req.body.username,
+      email: req.body.email,
+      phoneNumber: req.body.phoneNumber,
+      password: req.body.password,
+      name: req.body.name,
+      address: req.body.address
+    };   
+    
+    if(newUser.username.length > 0 && typeof newUser.username === 'string' &&
+    newUser.email.length > 0 && typeof newUser.email === 'string' &&
+    newUser.phoneNumber.length > 0 && typeof newUser.phoneNumber === 'string' &&
+    newUser.password.length > 4 && typeof newUser.password === 'string' &&
+    newUser.name.length > 0 && typeof newUser.name === 'string' &&
+    newUser.address.street.length > 0 && typeof newUser.address.street === 'string' &&
+    newUser.address.postalCode.toString().length > 0 && typeof newUser.address.postalCode === 'number' &&
+    newUser.address.city.length > 0 && typeof newUser.address.city === 'string') 
+    {
+      bcrypt.hash(newUser.password, saltRounds, function (err, hash) {
+        if(hash) {
+          newUser.password = hash;
+          console.log(newUser.password)
+          user.push(newUser);
+          res.sendStatus(200);
+        } else {
+          console.log(err);
+          res.sendStatus(400);
+        }
+      })
+    } else {
+      res.sendStatus(400);
+    }
+  } catch(err) {
+    res.sendStatus(500);
   }
 });
 
 app.post('/item', (req, res) => {
-  if(islogged) {
-    const newItem = {
-      uid: islogged.uid,
-      itemId: uuidv4(),
-      title: req.body.title,
-      description: req.body.description,
-      category: req.body.category,
-      location: req.body.location,
-      deliverytype: req.body.deliverytype,
-      contactinfo: req.body.contactinfo,
-      dateOfPosting: Date.now()
-    };
-  
-    if(newItem.title.length > 0 && typeof newItem.title === 'string',
-      newItem.description.length > 0 && typeof newItem.description === 'string',
-      newItem.location.city.length > 0 && typeof newItem.location.city === 'string',
-      newItem.location.postalCode.toString().length > 0 && typeof newItem.location.postalCode === 'number',
-      newItem.contactinfo.sellerName.length > 0 && typeof newItem.contactinfo.sellerName === 'string',
-      newItem.contactinfo.sellerEmail.length > 0 && typeof newItem.contactinfo.sellerEmail === 'string',
-      newItem.contactinfo.sellerPhonenumber.length > 0 && typeof newItem.contactinfo.sellerPhonenumber === 'string') 
-      {
-      if(Object.values(newItem.category).some(e => e === true)) 
-      {
-        item.push(newItem)
-        res.sendStatus(200);
+  try{
+    if(islogged != null) {
+      const newItem = {
+        uid: islogged.uid,
+        itemId: uuidv4(),
+        title: req.body.title,
+        description: req.body.description,
+        category: req.body.category,
+        location: req.body.location,
+        deliverytype: req.body.deliverytype,
+        contactinfo: req.body.contactinfo,
+        dateOfPosting: Date.now()
+      };
+    
+      if(newItem.title.length > 0 && typeof newItem.title === 'string' &&
+        newItem.description.length > 0 && typeof newItem.description === 'string' &&
+        newItem.location.city.length > 0 && typeof newItem.location.city === 'string' &&
+        newItem.location.postalCode.toString().length > 0 && typeof newItem.location.postalCode === 'number' &&
+        newItem.contactinfo.sellerName.length > 0 && typeof newItem.contactinfo.sellerName === 'string' &&
+        newItem.contactinfo.sellerEmail.length > 0 && typeof newItem.contactinfo.sellerEmail === 'string' &&
+        newItem.contactinfo.sellerPhonenumber.length > 0 && typeof newItem.contactinfo.sellerPhonenumber === 'string') 
+        {
+        if(Object.values(newItem.category).some(e => e === true)) 
+        {
+          item.push(newItem)
+          res.sendStatus(200);
+        } else {
+          console.log(Object.values(newItem.category).some(e => e === true))
+          res.sendStatus(400);
+        }
       } else {
-        console.log(Object.values(newItem.category).some(e => e === true))
         res.sendStatus(400);
       }
-    } else {
-      res.sendStatus(400);
-    }
 
-  } else {
-    res.sendStatus(401);
+    } else {
+      res.sendStatus(401);
+    }
+  } catch (err) {
+    res.sendStatus(500);
   }
 })
 
