@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JanneL-oamk/API-exercise.git"
+    "url": "git+https://github.com/SakuJ/API-fakeTori-exercise.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/JanneL-oamk/API-exercise/issues"
+    "url": "https://github.com/SakuJ/API-fakeTori-exercise/issues"
   },
-  "homepage": "https://github.com/JanneL-oamk/API-exercise#readme",
+  "homepage": "https://github.com/SakuJ/API-fakeTori-exercise#readme",
   "devDependencies": {
     "chai": "^4.2.0",
     "mocha": "^8.1.3"
