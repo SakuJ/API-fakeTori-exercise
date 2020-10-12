@@ -56,6 +56,10 @@ let user = [
 
 let islogged = null;
 
+app.get('/', (req, res) => {
+  res.send('This is my weather station demo')
+})
+
 //Get users
 app.get('/user', (req, res) => {
   res.json({ user });
