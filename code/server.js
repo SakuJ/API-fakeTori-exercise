@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const { v4: uuidv4 } = require('uuid');
 const app = express()
-const port = 3000
+const port = 80
 
 app.use(bodyParser.json());
 
@@ -55,6 +55,10 @@ let user = [
 ];
 
 let islogged = null;
+
+app.get('/', (req, res) => {
+  res.send('This is my weather station demo')
+})
 
 //Get users
 app.get('/user', (req, res) => {
