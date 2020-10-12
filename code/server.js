@@ -56,10 +56,6 @@ let user = [
 
 let islogged = null;
 
-app.get('/', (req, res) => {
-  res.send('This is my weather station demo')
-})
-
 //Get users
 app.get('/user', (req, res) => {
   res.json({ user });
@@ -84,7 +80,8 @@ app.get('/item/category', (req, res) => {
     } else if(key === "electronic" && req.query[key] === "true") {
       result = item.filter(t => t.category.electronic === true)
     } else {
-      result = item;
+      res.sendStatus(404);
+      break;
     }
     res.json({result});
   }
@@ -94,10 +91,10 @@ app.get('/item/location', (req, res) => {
   for(const key in req.query) {
     if(key === "city") {
       result = item.filter(t => t.location.city === req.query[key]);
+      res.json({result});
     } else {
-      result = item;
+      res.sendStatus(404);
     }
-    res.json({result});
   }
 })
 
@@ -108,10 +105,11 @@ app.get('/item/date', (req, res) => {
     let date2 = new Date(req.query.date2);
     let millis2 = date2.getTime();
     result = item.filter(t => (t.dateOfPosting >= millis1) && (t.dateOfPosting <= millis2));
+    res.json({result});
   } else {
-    result = item;
+    console.log("hoho")
+    res.sendStatus(404);
   }
-  res.json({result});
 })
 
 //login
@@ -172,7 +170,6 @@ app.post('/user', (req, res) => {
       bcrypt.hash(newUser.password, saltRounds, function (err, hash) {
         if(hash) {
           newUser.password = hash;
-          console.log(newUser.password)
           user.push(newUser);
           res.sendStatus(200);
         } else {
@@ -227,7 +224,7 @@ app.post('/item', (req, res) => {
       res.sendStatus(401);
     }
   } catch (err) {
-    res.sendStatus(500);
+    res.sendStatus(400);
   }
 })
 
@@ -246,35 +243,42 @@ app.put('/user/:uid', (req, res) => {
 
 app.put('/item/:itemId', (req, res) => {
   const result = item.find(t => t.itemId === req.params.itemId);
-  if(result !== undefined)
-  {
-    if(result.uid === islogged.uid){
-      for(const key in req.body){
-        result[key] = req.body[key];
+  if(islogged != null){
+    if(result !== undefined)
+    {
+      if(result.uid === islogged.uid){
+        for(const key in req.body){
+          result[key] = req.body[key];
+        }
+        res.sendStatus(200);
+      } else {
+        res.sendStatus(401);
       }
-      res.sendStatus(200);
     } else {
-      res.sendStatus(401);
+      res.sendStatus(404);
     }
-  }else {
-    res.sendStatus(404);
+  } else {
+    res.sendStatus(401);
   }
 })
 
 app.delete('/item/:itemId', (req, res) => {
   const resultIndex = item.findIndex(t => t.itemId === req.params.itemId);
   const result = item.find(x => x.itemId === req.params.itemId);
-  if(resultIndex !== -1)
-  {
-    if(result.uid === islogged.uid){
-      item.splice(resultIndex, 1);
-      res.sendStatus(200);
+  if(islogged != null){
+    if(resultIndex !== -1)
+    {
+      if(result.uid === islogged.uid){
+        item.splice(resultIndex, 1);
+        res.sendStatus(200);
+      } else {
+        res.sendStatus(401);
+      }
     } else {
-      res.sendStatus(401);
+      res.sendStatus(404);
     }
-  }
-  else {
-    res.sendStatus(404);
+  } else {
+    res.sendStatus(401);
   }
 })
 

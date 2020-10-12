@@ -6,7 +6,7 @@ const server = require('../server');
 const expect = chai.expect;
 const apiAddress = 'http://localhost:3000';
 
-describe('Fake tori.fi operations', function() {
+describe('Webstore api operations', function() {
 
   before(function() {
     server.start();
@@ -324,7 +324,7 @@ describe('Fake tori.fi operations', function() {
           }
         })
         .then(response => {
-          expect(response.status).to.equal(500);
+          expect(response.status).to.equal(400);
         })
     })    
 
@@ -390,7 +390,39 @@ describe('Fake tori.fi operations', function() {
         })
     })  
 
-    it('should modify a item', async () => {
+    it('should not modify item if item does not exist', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .put('/item/randomId')
+        .send({
+          title: 'New Title'
+        })
+        .then(res => {
+          expect(res.status).to.equal(404);
+        })
+    })  
+    
+    it('should not modify if not permission', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/logout')
+        .then(response => {
+          expect(response.status).to.equal(200);
+          return chai .request(apiAddress).put('/item/' + item[item.length -1].itemId)
+          .send({
+            title: 'new car title'
+          })
+        })
+        .then(responseRead => {
+          expect(responseRead.status).to.equal(401);
+        })
+    })
+  })
+
+  describe('Delete item', async () => {  
+    it('should delete item', async () => {
       await
       chai
         .request(apiAddress)
@@ -401,25 +433,14 @@ describe('Fake tori.fi operations', function() {
         })
         .then(response => {
           expect(response.status).to.equal(200);
-          return chai .request(apiAddress).put('/item/randomId')
-            .send({
-              title: 'New Title'
-            })
+          return chai.request(apiAddress).get('/logged')
+        .then(responseRead => {
+          islogged = responseRead.body.islogged
+          return chai.request(apiAddress).delete('/item/' + item[item.length -1].itemId)
         })
         .then(res => {
-          expect(res.status).to.equal(404);
-        })
-    })  
-    
-    it('should not modify if not logged in', async () => {
-      await
-      chai
-        .request(apiAddress)
-        .post('/logout')
-        .then(response => {
-          expect(response.status).to.equal(200);
-          return chai .request(apiAddress).post('/item')
-          .send({
+          expect(res.status).to.equal(200);
+          return chai.request(apiAddress).post('/item').send({
             uid: islogged.uid,
             title: 'My old car',
             description: 'Very much used',
@@ -445,9 +466,114 @@ describe('Fake tori.fi operations', function() {
             }
           })
         })
-        .then(responseRead => {
-          expect(responseRead.status).to.equal(401);
+        .then(resp => {
+          expect(resp.status).to.equal(200);
+          return chai.request(apiAddress).get('/item')
+        })
+        .then(respo => {
+          item.push(respo.body.item[respo.body.item.length - 1]);
+        })
+
+      })
+    })
+
+    it('should not delete item if item not found', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .delete('/item/randomId')
+        .then(response => {
+          expect(response.status).to.equal(404);
         })
     })
+
+    it('should not delete item if not permission', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .post('/logout')
+        .then(response => {
+          return chai.request(apiAddress).delete('/item/'+ item[item.length -1].itemId)
+        })
+        .then(res => {
+          expect(res.status).to.equal(401);
+        })
+    })
+  })
+
+  describe('Search items', async () => {
+    it('should find item by category', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .get('/item/category/?cars=true')
+        .then(response => {
+          expect(response.body.result[response.body.result.length - 1].category.cars)
+          .to.be.true;
+          })
+    })
+
+    it('should find item by location', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .get('/item/location/?city=Oulu')
+        .then(response => {
+          expect(response.body.result[response.body.result.length - 1].location.city)
+          .to.equal('Oulu')
+        })
+    })
+
+    it('should find item by two dates', async () => {
+      date1 = '05/05/2020'
+      date2 = '11/11/2021'
+
+      expectDate1 = new Date(date1);
+      date1InMillis = expectDate1.getTime();
+      expectDate2 = new Date(date2);
+      date2InMillis = expectDate2.getTime();
+
+      await
+      chai
+        .request(apiAddress)
+        .get('/item/date/?date=' + date1 + '&date2=' + date2)
+        .then(response => {
+          expect(response.body.result[response.body.result.length - 1].dateOfPosting)
+          .to.be.at.least(date1InMillis)
+          expect(response.body.result[response.body.result.length - 1].dateOfPosting)
+          .to.be.below(date2InMillis)
+        })
+    })
+
+    it('should return all items', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .get('/item')
+        .then(response => {
+          expect(response.body.item.length).to.be.at.least(1)
+        })
+    })
+
+    it('should not return item if cannot find', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .get('/item/category/?electronic=true')
+        .then(response => {
+          expect(response.body.result).to.be.empty;
+        })
+    })
+
+    it('should not return anythink if wrong query parameters', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .get('/item/cate/?cars=true')
+        .then(response => {
+          expect(response.status).to.equal(404);
+        })
+    })
+
   })
 })
