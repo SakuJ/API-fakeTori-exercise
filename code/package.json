@@ -31,5 +31,9 @@
   "directories": {
     "test": "test"
   },
+  "engines": {
+    "node": "12.18.3"
+  },
   "description": ""
+
 }
