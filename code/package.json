@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "start": "node server.js"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -32,5 +32,9 @@
   "directories": {
     "test": "test"
   },
+  "engines": {
+    "node": "12.18.3"
+  },
   "description": ""
+
 }

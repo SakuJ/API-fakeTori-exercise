@@ -5,7 +5,7 @@ const server = require('../server');
 const fs = require('fs');
 
 const expect = chai.expect;
-const apiAddress = 'http://localhost:3000';
+const apiAddress = 'https://fake-tori.herokuapp.com';
 
 describe('Webstore api operations', function() {
 

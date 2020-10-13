@@ -4,11 +4,14 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const { v4: uuidv4 } = require('uuid');
 const app = express()
-const port = 3000
 
 const fs = require('fs')
 const multer = require('multer')
 const multerUpload = multer({dest: 'uploads/'})
+
+const port = process.env.PORT || 5000
+const path = require('path');
+
 
 app.use(bodyParser.json());
 
@@ -83,9 +86,10 @@ let img = (req) => {
   return imgArr;
 }
 
-app.get('/', (req, res) => {
-  res.send('This is my weather station demo')
+app.get('/', function(req, res) {
+  res.sendFile(path.join(__dirname + '/API_design.html'))
 })
+
 
 //Get users
 app.get('/user', (req, res) => {
