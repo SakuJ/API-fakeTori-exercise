@@ -2,6 +2,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const server = require('../server');
+const fs = require('fs');
 
 const expect = chai.expect;
 const apiAddress = 'http://localhost:3000';
@@ -235,6 +236,12 @@ describe('Webstore api operations', function() {
             electronic: false,
             other: false
           },
+          images: {
+            image1: (fs.readFileSync('./test/images/unknown.jpg'), 'test1_0.jpg'),
+            image2: null,
+            image3: null,
+            image4: null
+          },
           location: {
             city: 'Oulu',
             postalCode: 90100
@@ -250,7 +257,7 @@ describe('Webstore api operations', function() {
           }
         })
         .then(response => {
-          expect(response.status).to.equal(200);
+          expect(response.status).to.equal(201);
           return chai.request(apiAddress).get('/item')
         })
         .then(res => {
@@ -388,7 +395,19 @@ describe('Webstore api operations', function() {
         .then(res => {
           expect(res.status).to.equal(200);
         })
-    })  
+    })
+
+    it('should add a image to a item', async () => {
+      await
+      chai
+        .request(apiAddress)
+        .put('/item/' + item[item.length - 1].itemId)
+        .attach('img', fs.readFileSync('./test/images/unknown.jpg'), 'test1_1.jpg')
+        .field('title', 'new title')
+        .then(response => {
+          expect(response.status).to.equal(200);
+        })
+    })
 
     it('should not modify item if item does not exist', async () => {
       await
@@ -467,7 +486,7 @@ describe('Webstore api operations', function() {
           })
         })
         .then(resp => {
-          expect(resp.status).to.equal(200);
+          expect(resp.status).to.equal(201);
           return chai.request(apiAddress).get('/item')
         })
         .then(respo => {

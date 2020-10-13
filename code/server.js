@@ -4,7 +4,11 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const { v4: uuidv4 } = require('uuid');
 const app = express()
-const port = process.env.PORT || 80
+const port = 3000
+
+const fs = require('fs')
+const multer = require('multer')
+const multerUpload = multer({dest: 'uploads/'})
 
 app.use(bodyParser.json());
 
@@ -20,6 +24,12 @@ let item = [
       clothings: true,
       electronic: false,
       other: false
+    },
+    images: {
+      image1: null,
+      image2: null,
+      image3: null,
+      image4: null
     },
     location: {
       city: 'city',
@@ -55,6 +65,23 @@ let user = [
 ];
 
 let islogged = null;
+
+let img = (req) => {
+  var imgArr = [];
+  try {
+    req.files.forEach(f => {
+      fs.renameSync(f.path, './uploads/' + f.originalname);
+      imgArr.push('./uploads/' + f.originalname); 
+    })
+  } catch(err) {
+    //console.log(err);
+  }
+
+  for(i = imgArr.length; i < 4; i++) {
+    imgArr[i] = null;
+  }
+  return imgArr;
+}
 
 app.get('/', (req, res) => {
   res.send('This is my weather station demo')
@@ -189,8 +216,9 @@ app.post('/user', (req, res) => {
   }
 });
 
-app.post('/item', (req, res) => {
+app.post('/item', multerUpload.array('img', 4), (req, res) => {
   try{
+    var imgArr = img(req);
     if(islogged != null) {
       const newItem = {
         uid: islogged.uid,
@@ -199,6 +227,12 @@ app.post('/item', (req, res) => {
         description: req.body.description,
         category: req.body.category,
         location: req.body.location,
+        image: {
+          image1: imgArr[0],
+          image2: imgArr[1],
+          image3: imgArr[2],
+          image4: imgArr[3]
+        },
         deliverytype: req.body.deliverytype,
         contactinfo: req.body.contactinfo,
         dateOfPosting: Date.now()
@@ -215,7 +249,7 @@ app.post('/item', (req, res) => {
         if(Object.values(newItem.category).some(e => e === true)) 
         {
           item.push(newItem)
-          res.sendStatus(200);
+          res.sendStatus(201);
         } else {
           console.log(Object.values(newItem.category).some(e => e === true))
           res.sendStatus(400);
@@ -245,7 +279,7 @@ app.put('/user/:uid', (req, res) => {
   }
 })
 
-app.put('/item/:itemId', (req, res) => {
+app.put('/item/:itemId', multerUpload.array('img', 4), (req, res) => {
   const result = item.find(t => t.itemId === req.params.itemId);
   if(islogged != null){
     if(result !== undefined)
@@ -253,6 +287,12 @@ app.put('/item/:itemId', (req, res) => {
       if(result.uid === islogged.uid){
         for(const key in req.body){
           result[key] = req.body[key];
+        }
+        var count = 0;
+        var arr = img(req);
+        for(let img in result["images"]) {
+          result["images"][img] = arr[count];
+          count += 1;
         }
         res.sendStatus(200);
       } else {
