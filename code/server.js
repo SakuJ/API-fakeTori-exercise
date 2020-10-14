@@ -11,7 +11,6 @@ const multerUpload = multer({dest: 'uploads/'})
 
 const port = process.env.PORT || 5000
 const path = require('path');
-const { use } = require('chai');
 
 
 app.use(bodyParser.json());
