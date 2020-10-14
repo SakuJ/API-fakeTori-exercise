@@ -11,6 +11,7 @@ const multerUpload = multer({dest: 'uploads/'})
 
 const port = process.env.PORT || 5000
 const path = require('path');
+const { use } = require('chai');
 
 
 app.use(bodyParser.json());
@@ -149,14 +150,11 @@ app.get('/item/date', (req, res) => {
 
 //login
 app.post('/login', (req, res) => {
-  for(let i in user) {
+  for(let i = 0; i < user.length; i++) {
     if(user[i].username === req.body.username) {
       islogged = user[i];
       break;
-    } else {
-      res.send('Wrong username')
-      break;
-    }
+    } 
   }
   if(islogged) {
     bcrypt.compare(req.body.password, islogged.password, function (err, result) {
@@ -167,6 +165,8 @@ app.post('/login', (req, res) => {
         res.send('Wrong password');
       }
     })
+  }else {
+    res.send("Wrong username")
   }
 })
 
